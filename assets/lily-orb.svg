@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+<defs>
+ <radialGradient id="outer"><stop offset=".52" stop-color="#e60012" stop-opacity=".24"/><stop offset="1" stop-color="#e60012" stop-opacity="0"/></radialGradient>
+ <radialGradient id="sphere" cx="35%" cy="27%" r="76%"><stop stop-color="#ffe6e7"/><stop offset=".12" stop-color="#ffafb7"/><stop offset=".3" stop-color="#f83b53"/><stop offset=".54" stop-color="#a60020"/><stop offset=".8" stop-color="#34030e"/><stop offset="1" stop-color="#0f0910"/></radialGradient>
+ <radialGradient id="depth" cx="67%" cy="70%" r="70%"><stop stop-color="#070711" stop-opacity=".87"/><stop offset=".56" stop-color="#1b050c" stop-opacity=".26"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".85"/><stop offset=".32" stop-color="#ffb6c1" stop-opacity=".2"/><stop offset=".66" stop-color="#ff526d" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity=".7"/></linearGradient>
+ <linearGradient id="ribbon"><stop stop-color="#ff4c68" stop-opacity=".1"/><stop offset=".45" stop-color="#fff3f5"/><stop offset=".7" stop-color="#ff7a90"/><stop offset="1" stop-color="#ff183b" stop-opacity=".12"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="3"/></filter>
+ <clipPath id="clip"><circle cx="160" cy="160" r="119"/></clipPath>
+</defs>
+<circle cx="160" cy="160" r="160" fill="url(#outer)"/>
+<circle cx="160" cy="160" r="120" fill="url(#sphere)"/>
+<circle cx="160" cy="160" r="120" fill="url(#depth)"/>
+<g clip-path="url(#clip)" fill="none">
+ <path d="M38 186C85 63 228 292 282 111" stroke="url(#ribbon)" stroke-width="14" filter="url(#glow)" opacity=".72"/>
+ <path d="M38 186C85 63 228 292 282 111" stroke="url(#ribbon)" stroke-width="2.4"/>
+ <path d="M48 212C107 81 237 269 273 87" stroke="url(#ribbon)" stroke-width="1.2" opacity=".62"/>
+ <path d="M53 96C151 222 165 33 276 180" stroke="url(#ribbon)" stroke-width="6" filter="url(#glow)" opacity=".7"/>
+ <path d="M53 96C151 222 165 33 276 180" stroke="url(#ribbon)" stroke-width="1.8" opacity=".78"/>
+ <ellipse cx="160" cy="160" rx="124" ry="53" transform="rotate(-36 160 160)" stroke="url(#edge)" stroke-width=".7" opacity=".45"/>
+</g>
+<circle cx="160" cy="160" r="120" fill="none" stroke="url(#edge)" stroke-width="1.25"/>
+<path d="M71 116a105 105 0 0 1 89-62" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" opacity=".62"/>
+</svg>

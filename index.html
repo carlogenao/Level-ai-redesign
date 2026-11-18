@@ -1026,10 +1026,11 @@ html[data-motion="off"] .orb-wave i, html[data-motion="off"] .i-voice .wavebars 
 /* ================= Configuration =================
    Nothing secret belongs here. Leave values null until Level AI approves them.
    - inquiryEndpoint: same-origin POST endpoint (e.g. "/api/intake") that returns { id } on success.
-   - elevenLabs.agentId + scriptSrc: the approved public ElevenLabs widget settings. */
+   - elevenLabs.chatPage: the Lily chat page (lily-chat.html). build.sh sets it for real hosts.
+     The claude.ai preview leaves it null because its sandbox blocks the ElevenLabs connection. */
 window.LEVEL_CONFIG = window.LEVEL_CONFIG || {
   inquiryEndpoint: null,
-  elevenLabs: { agentId: null, scriptSrc: null }
+  elevenLabs: { chatPage: null }
 };
 
 (function () {
@@ -1286,8 +1287,7 @@ window.LEVEL_CONFIG = window.LEVEL_CONFIG || {
   });
 
   /* ---------- Chat: ElevenLabs only when configured ---------- */
-  var widgetLoaded = false;
-  function chatConfigured() { return !!(CFG.elevenLabs && CFG.elevenLabs.agentId && CFG.elevenLabs.scriptSrc); }
+  function chatConfigured() { return !!(CFG.elevenLabs && CFG.elevenLabs.chatPage); }
   function prepareChat(variant) {
     var sheet = $('#chatSheet');
     var wide = window.matchMedia('(min-width: 820px)').matches;
@@ -1295,20 +1295,24 @@ window.LEVEL_CONFIG = window.LEVEL_CONFIG || {
     sheet.classList.toggle('fold', useFold);
     sheet.classList.remove('unfolding');
     if (useFold && root.getAttribute('data-motion') === 'on') { void sheet.offsetWidth; sheet.classList.add('unfolding'); }
-    if (chatConfigured() && !widgetLoaded) {
-      widgetLoaded = true;
+    if (chatConfigured()) {
+      // Load Lily fresh each time the chat opens; closing the dialog ends the conversation.
       var mount = $('#widgetMount');
-      var el = document.createElement('elevenlabs-convai');
-      el.setAttribute('agent-id', CFG.elevenLabs.agentId);
-      mount.appendChild(el); mount.hidden = false;
+      mount.innerHTML = '';
+      var frame = document.createElement('iframe');
+      frame.src = CFG.elevenLabs.chatPage;
+      frame.title = 'Text Lily, Level AI’s AI assistant (website chat)';
+      frame.style.cssText = 'flex:1;width:100%;min-height:0;border:0;background:#fff';
+      mount.appendChild(frame); mount.hidden = false;
       $('#chatLog').hidden = true; $('#chatCompose').hidden = true;
-      var sc = document.createElement('script'); sc.src = CFG.elevenLabs.scriptSrc; sc.async = true;
-      sc.onerror = function () {
-        mount.hidden = true; $('#chatLog').hidden = false; $('#chatCompose').hidden = false; widgetLoaded = false;
-      };
-      document.body.appendChild(sc);
     }
   }
+  $('#dlg-chat').addEventListener('close', function () {
+    var f = $('#widgetMount iframe');
+    if (!f) return;
+    try { f.contentWindow.stopLily && f.contentWindow.stopLily(); } catch (e) {}
+    f.remove();
+  });
 
   /* ---------- Discovery calendar on demand ---------- */
   $('#loadCal').addEventListener('click', function () {

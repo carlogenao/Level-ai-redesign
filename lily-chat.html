@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Text Lily</title>
+<style>
+html,body{margin:0;height:100%;background:#fff;color:#17171c;font:15px/1.5 Arial,Helvetica,sans-serif}
+body{display:flex;flex-direction:column}
+elevenlabs-convai{display:block;flex:1;min-height:0;width:100%;height:100%}
+#lily-loading{padding:18px 16px}
+#lily-loading[hidden]{display:none}
+#lily-loading p{margin:0 0 10px}
+#lily-retry{font:inherit;font-weight:700;padding:9px 16px;background:#fff;color:#17171c;border:1px solid #767676;border-radius:999px;cursor:pointer}
+#lily-retry:focus-visible{outline:3px solid #e60012;outline-offset:3px}
+</style>
+</head>
+<body>
+<section id="lily-loading" aria-label="Lily chat status">
+  <p id="lily-status" role="status" aria-live="polite" aria-atomic="true">Connecting to Lily’s website chat…</p>
+  <button id="lily-retry" type="button" hidden>Retry</button>
+</section>
+<elevenlabs-convai agent-id="__AGENT_ID__" avatar-image-url="assets/lily-orb.svg" avatar-orb-color-1="#E60012" avatar-orb-color-2="#ffffff" action-text="Text Lily" start-call-text="Text Lily" variant="full" override-text-only="true" text-input="true" always-expanded="true"></elevenlabs-convai>
+<script>
+(function () {
+  'use strict';
+  var widget = document.querySelector('elevenlabs-convai');
+  var panel = document.getElementById('lily-loading');
+  var statusEl = document.getElementById('lily-status');
+  var retry = document.getElementById('lily-retry');
+  var ready = false, expanded = false, observer = null, observedRoot = null, poll, timer;
+  // Message colors: Lily in blue, the visitor in gray. Injected into the widget's shadow DOM.
+  var theme = document.createElement('style');
+  theme.id = 'level-lily-theme';
+  theme.textContent = [
+    ':host{--el-overlay-padding:0px}',
+    '.overlay{padding:0!important;inset:0!important;width:100%!important;height:100%!important}',
+    '.sheet[data-variant]{width:100%!important;max-width:none!important;height:100%!important;max-height:100%!important;margin:0!important;border-radius:0!important}',
+    '.pr-8>.markdown{display:table;max-width:100%;box-sizing:border-box;background:#0062cc;color:#fff;border-radius:20px 20px 20px 6px;padding:10px 14px;line-height:1.4}',
+    '.pr-8>.markdown a{color:#fff;text-decoration:underline}',
+    '.rounded-bubble.whitespace-pre-wrap{border-radius:20px!important;padding:10px 14px!important;font-size:15px!important;line-height:1.4!important}',
+    '.rounded-bubble.whitespace-pre-wrap.bg-accent{background:#e9e9ee!important;color:#17171c!important;border-bottom-right-radius:6px!important}',
+    '.rounded-bubble.whitespace-pre-wrap.bg-base-active{background:#0062cc!important;color:#fff!important;border-bottom-left-radius:6px!important}'
+  ].join('\n');
+  function stop() { clearInterval(poll); clearTimeout(timer); if (observer) observer.disconnect(); }
+  function fallback(msg) { if (ready) return; statusEl.textContent = msg; retry.hidden = false; }
+  function visible(el) { var s = getComputedStyle(el); return el.getClientRects().length > 0 && s.visibility !== 'hidden' && s.display !== 'none'; }
+  // "Ready" means real chat controls rendered. It never claims a conversation is connected.
+  function inspect() {
+    if (ready) return;
+    var root = widget.shadowRoot; if (!root) return;
+    if (!root.getElementById(theme.id)) root.appendChild(theme);
+    if (root !== observedRoot) { if (observer) observer.disconnect(); observer = new MutationObserver(inspect); observer.observe(root, { childList: true, subtree: true, attributes: true }); observedRoot = root; }
+    var buttons = Array.prototype.slice.call(root.querySelectorAll('button'));
+    var expand = buttons.filter(function (b) { return b.getAttribute('aria-label') === 'Expand widget'; })[0];
+    // Presentation only: never click start, send or consent controls.
+    if (!expanded && expand && visible(expand)) { expanded = true; expand.click(); return; }
+    var input = Array.prototype.some.call(root.querySelectorAll('textarea,input[type="text"],[contenteditable="true"]'), visible);
+    var start = buttons.some(function (b) { return visible(b) && !b.disabled && /^(text lily|start chat|start conversation|chat|agree|i agree|accept|agree and continue)$/i.test((b.getAttribute('aria-label') || b.textContent || '').trim()); });
+    if (input || start) { ready = true; panel.hidden = true; stop(); try { parent.postMessage({ type: 'lily-ready' }, location.origin); } catch (e) {} }
+  }
+  retry.addEventListener('click', function () { location.reload(); });
+  window.stopLily = function () {
+    stop();
+    try { if (typeof widget.endConversation === 'function') widget.endConversation(); } catch (e) {}
+  };
+  addEventListener('pagehide', window.stopLily, { once: true });
+  var provider = document.createElement('script');
+  provider.src = '__WIDGET_SRC__';
+  provider.async = true;
+  provider.addEventListener('error', function () { fallback('Lily’s chat couldn’t load. Retry, or call 573-LEVEL-AI (573-538-3524).'); });
+  document.body.appendChild(provider);
+  poll = setInterval(inspect, 200);
+  timer = setTimeout(function () { fallback('Lily’s chat is taking longer than expected. Wait, retry, or call 573-LEVEL-AI (573-538-3524).'); }, 15000);
+  inspect();
+})();
+</script>
+</body>
+</html>
